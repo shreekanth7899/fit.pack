@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <title>FitPack — Squad Fitness Tracker</title>
+  <link rel="icon" href="fitpacklogo.png">
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#08080f"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ── NAVBAR ──────────────────────────────── -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <div class="nav-logo"><span class="logo-fit">FIT</span><span class="logo-pack">PACK</span><span class="logo-dot">●</span></div>
+    <!-- Dashboard tabs (shown inside navbar when in room) -->
+    <div class="nav-tabs" id="navTabs" style="display:none">
+      <button class="nav-tab active" data-tab="today" onclick="UI.switchTab('today',this)">📋 Today</button>
+      <button class="nav-tab" data-tab="goals" onclick="UI.switchTab('goals',this)">🎯 Goals</button>
+      <button class="nav-tab" data-tab="insights" onclick="UI.switchTab('insights',this)">📊 Squad</button>
+      <button class="nav-tab" data-tab="settings" onclick="UI.switchTab('settings',this)">⚙️ More</button>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn--primary btn--sm" id="navCreateBtn" onclick="UI.openModal('createRoomModal')">Create Room</button>
+      <button class="btn btn--outline btn--sm" id="navJoinBtn" onclick="UI.openModal('joinRoomModal')">Join Room</button>
+      <!-- Dashboard-only actions -->
+      <div class="nav-room-pill" id="navRoomInfo" style="display:none">
+        <span class="pulse-dot"></span>
+        <span id="navRoomName"></span>
+        <span id="navRoomCode" class="mono nav-code"></span>
+      </div>
+      <button class="btn-icon btn-wa" id="navShareBtn" style="display:none" onclick="shareOnWhatsApp()" title="Share">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+      </button>
+      <button class="btn-icon" id="navAlarmBtn" style="display:none" onclick="UI.openModal('alarmModal')">⏰</button>
+      <button class="nav-members-btn" id="navMembersBtn" style="display:none" onclick="UI.toggleSidebar()">
+        👥 <span id="navMemberCount">0</span>
+      </button>
+      <button class="nav-leave" id="navLeaveBtn" style="display:none" onclick="leaveRoom()">Leave</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ── LANDING ──────────────────────────────── -->
+<section id="landingPage" class="page active">
+  <div class="hero">
+    <div class="hero-bg">
+      <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&q=80&auto=format" alt="" class="hero-img"/>
+      <div class="hero-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Squad Fitness Tracker</div>
+      <h1 class="hero-title">TRAIN TOGETHER.<br/>WIN TOGETHER.</h1>
+      <p class="hero-desc">Create a room, invite your squad, track workouts, habits &amp; meals. Push each other every single day.</p>
+      <div class="hero-btns">
+        <button class="btn btn--primary btn--lg" onclick="UI.openModal('createRoomModal')">Create a Room <span>→</span></button>
+        <button class="btn btn--outline btn--lg" onclick="UI.openModal('joinRoomModal')">Join with Code</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feat-card">
+      <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&q=80&auto=format" class="feat-img" alt=""/>
+      <div class="feat-body"><span class="feat-icon">📋</span><h3>Daily Tracking</h3><p>Log workouts, meals, habits &amp; weight every day</p></div>
+    </div>
+    <div class="feat-card">
+      <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&q=80&auto=format" class="feat-img" alt=""/>
+      <div class="feat-body"><span class="feat-icon">📊</span><h3>Squad Leaderboard</h3><p>Everyone's streaks &amp; progress synced live</p></div>
+    </div>
+    <div class="feat-card">
+      <img src="https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=500&q=80&auto=format" class="feat-img" alt=""/>
+      <div class="feat-body"><span class="feat-icon">⏰</span><h3>Background Alarm</h3><p>Rings even when browser is closed. No excuses.</p></div>
+    </div>
+  </div>
+
+  <div class="ticker-wrap"><div class="ticker">
+    <span>PUSH YOUR LIMITS</span><span class="tdot">✦</span>
+    <span>STAY CONSISTENT</span><span class="tdot">✦</span>
+    <span>TRUST THE PROCESS</span><span class="tdot">✦</span>
+    <span>NO DAYS OFF</span><span class="tdot">✦</span>
+    <span>ONE MORE REP</span><span class="tdot">✦</span>
+    <span>EARN YOUR REST</span><span class="tdot">✦</span>
+    <span>EAT CLEAN TRAIN MEAN</span><span class="tdot">✦</span>
+    <span>DISCIPLINE OVER MOTIVATION</span><span class="tdot">✦</span>
+    <span>STRONGER EVERY DAY</span><span class="tdot">✦</span>
+    <span>PUSH YOUR LIMITS</span><span class="tdot">✦</span>
+    <span>STAY CONSISTENT</span><span class="tdot">✦</span>
+  </div></div>
+
+  <footer class="landing-footer">
+    A step towards a healthier you — crafted with 💚 by <a href="https://stepaheadxcellence.com"><strong>StepAhead</strong></a>
+  </footer>
+</section>
+
+<!-- ── DASHBOARD ─────────────────────────────── -->
+<section id="dashboardPage" class="page" style="display:none">
+  <div class="dash-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <span class="sb-title">Members</span>
+        <button class="sidebar-close" onclick="UI.toggleSidebar()">✕</button>
+      </div>
+      <div class="room-banner">
+        <div class="rb-label">Active Room</div>
+        <div class="rb-name" id="sbRoomName">—</div>
+        <div class="rb-code mono" id="sbRoomCode">—</div>
+        <button class="btn btn--whatsapp btn--sm" style="margin-top:10px;width:100%" onclick="shareOnWhatsApp()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          Invite Friends
+        </button>
+      </div>
+      <div id="memberList" class="member-list-wrap"></div>
+      <div id="pendingCard" style="display:none">
+        <div class="sb-card-head"><span class="sb-card-title">Pending</span><span class="count-badge red" id="pendingCount">0</span></div>
+        <div id="pendingList"></div>
+      </div>
+      <div class="my-progress-block">
+        <div class="sb-card-title">My Progress</div>
+        <div id="myStats"></div>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="UI.toggleSidebar()"></div>
+
+    <!-- MAIN -->
+    <main class="dash-main">
+
+      <!-- TODAY -->
+      <div class="panel active" id="panel-today">
+        <div class="panel-hd">
+          <div><div class="panel-title">TODAY'S PLAN</div><div class="panel-date" id="todayDate"></div></div>
+          <button class="btn btn--primary btn--sm" onclick="UI.toggleAddForm()">＋ Add</button>
+        </div>
+        <div class="add-form" id="addWorkoutForm">
+          <div class="form-row-2">
+            <div class="fg">
+              <label>Activity</label>
+              <select id="actType">
+                <option value="🌅 Wake Up">🌅 Wake Up</option>
+                <option value="🚶 Walk">🚶 Walk</option>
+                <option value="🏃 Run">🏃 Run</option>
+                <option value="🏋️ Gym">🏋️ Gym</option>
+                <option value="🧘 Yoga">🧘 Yoga</option>
+                <option value="🚴 Cycling">🚴 Cycling</option>
+                <option value="🏊 Swimming">🏊 Swimming</option>
+                <option value="💪 Workout">💪 Workout</option>
+                <option value="🥊 Boxing">🥊 Boxing</option>
+                <option value="🤸 HIIT">🤸 HIIT</option>
+                <option value="🏀 Sports">🏀 Sports</option>
+                <option value="🌿 Dal / Sprouts">🌿 Dal / Sprouts</option>
+                <option value="🥗 Healthy Meal">🥗 Healthy Meal</option>
+                <option value="🎨 Hobby Time">🎨 Hobby Time</option>
+                <option value="📵 No Phone Before Bed">📵 No Phone Before Bed</option>
+                <option value="💧 Water Intake">💧 Water Intake</option>
+                <option value="📦 Other">📦 Other</option>
+              </select>
+            </div>
+            <div class="fg"><label>Time *</label><input type="time" id="actTime"/></div>
+          </div>
+          <div class="form-row-2">
+            <div class="fg"><label>Duration <span class="lbl-opt">mins, optional</span></label><input type="number" id="actDuration" placeholder="45" min="1"/></div>
+            <div class="fg"><label>Note <span class="lbl-opt">optional</span></label><input id="actNote" placeholder="e.g. 5km, moong dal..."/></div>
+          </div>
+          <div class="form-foot">
+            <button class="btn btn--primary" onclick="Workouts.add()">Add Activity</button>
+            <button class="btn btn--ghost" onclick="UI.toggleAddForm()">Cancel</button>
+          </div>
+        </div>
+        <div id="workoutList"></div>
+        <div class="section-sep">
+          <div class="section-hd">
+            <div class="section-label">✅ Daily Habits</div>
+            <span class="habit-score" id="habitScore">0/5</span>
+          </div>
+          <div id="habitChecks" class="habit-grid"></div>
+        </div>
+        <div class="section-sep">
+          <div class="section-hd">
+            <div class="section-label">⚖️ Weight Log</div>
+            <button class="btn btn--ghost btn--sm" onclick="UI.openModal('weightModal')">＋ Log</button>
+          </div>
+          <div id="weightList"></div>
+        </div>
+      </div>
+
+      <!-- GOALS -->
+      <div class="panel" id="panel-goals">
+        <div class="panel-hd">
+          <div class="panel-title">MY GOALS</div>
+          <button class="btn btn--primary btn--sm" onclick="UI.openModal('goalsModal')">Edit</button>
+        </div>
+        <div id="goalsGrid" class="goals-grid"></div>
+        <div class="quote-card">
+          <img src="https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=900&q=80&auto=format" class="quote-img" alt=""/>
+          <div class="quote-overlay"><div class="quote-text" id="quoteText"></div></div>
+        </div>
+      </div>
+
+      <!-- INSIGHTS -->
+      <div class="panel" id="panel-insights">
+        <div class="panel-hd">
+          <div class="panel-title">SQUAD INSIGHTS</div>
+          <div class="chip-group" id="dayChips">
+            <button class="chip active" onclick="Insights.setDays(7,this)">7D</button>
+            <button class="chip" onclick="Insights.setDays(14,this)">14D</button>
+            <button class="chip" onclick="Insights.setDays(30,this)">30D</button>
+          </div>
+        </div>
+        <div id="leaderboard" class="leaderboard"></div>
+        <div id="insightsGrid" class="insights-grid"></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="panel" id="panel-settings">
+        <div class="panel-title" style="margin-bottom:20px">SETTINGS</div>
+        <div class="settings-card">
+          <div class="sc-title">Room</div>
+          <div class="s-row"><div><div class="s-label">Room Code</div><div class="s-val mono" id="settingsCode" style="font-size:1.4rem;color:var(--accent)">—</div></div><button class="btn btn--ghost btn--sm" onclick="copyCode()">Copy</button></div>
+          <div class="s-row"><div><div class="s-label">Invite Friends</div><div class="s-val">Share room code via WhatsApp</div></div><button class="btn btn--whatsapp btn--sm" onclick="shareOnWhatsApp()">Share</button></div>
+        </div>
+        <div class="settings-card">
+          <div class="sc-title">Alarms <span class="pwa-badge" id="pwaBadge"></span></div>
+          <div id="alarmListEl"></div>
+          <button class="btn btn--primary" style="margin-top:12px;width:100%" onclick="UI.openModal('alarmModal')">＋ Set Alarm</button>
+        </div>
+        <div class="settings-card">
+          <div class="sc-title">Account</div>
+          <div class="s-row"><div><div class="s-label">Leave Room</div><div class="s-val">Rejoin anytime with code + name + height</div></div><button class="btn btn--danger btn--sm" onclick="leaveRoom()">Leave</button></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<div id="toastWrap" class="toast-wrap"></div>
+
+<!-- CREATE ROOM MODAL -->
+<div class="overlay" id="createRoomModal">
+  <div class="modal">
+    <button class="modal-x" onclick="UI.closeModal('createRoomModal')">✕</button>
+    <div class="modal-hd"><div class="modal-icon">🏋️</div><div class="modal-title">CREATE ROOM</div><div class="modal-sub">Start your challenge and invite your squad</div></div>
+    <div class="form-row-2">
+      <div class="fg"><label>Your Name *</label><input id="cr_name" placeholder="e.g. Rahul"/></div>
+      <div class="fg"><label>Room Name *</label><input id="cr_roomname" placeholder="Morning Warriors 🔥"/></div>
+    </div>
+    <div class="form-row-2">
+      <div class="fg"><label>Height (cm) *</label><input type="number" id="cr_height" placeholder="175"/></div>
+      <div class="fg"><label>Current Weight (kg) *</label><input type="number" id="cr_weight" placeholder="75"/></div>
+    </div>
+    <div class="form-row-2">
+      <div class="fg"><label>Target Weight (kg) *</label><input type="number" id="cr_targetWeight" placeholder="65"/></div>
+      <div class="fg"><label>Target Date *</label><input type="date" id="cr_targetDate"/></div>
+    </div>
+    <button class="btn btn--primary btn--full" onclick="Rooms.create()" style="margin-top:6px">Create Room →</button>
+  </div>
+</div>
+
+<!-- JOIN ROOM MODAL -->
+<div class="overlay" id="joinRoomModal">
+  <div class="modal">
+    <button class="modal-x" onclick="UI.closeModal('joinRoomModal')">✕</button>
+    <div class="modal-hd"><div class="modal-icon">🔗</div><div class="modal-title">JOIN ROOM</div><div class="modal-sub">Enter the code shared by your friend</div></div>
+    <div class="fg">
+      <label>Room Code *</label>
+      <div style="display:flex;gap:8px">
+        <input id="jr_code" placeholder="FIT-XXXX" class="mono" style="font-size:1.1rem;letter-spacing:3px;text-transform:uppercase;flex:1" oninput="this.value=this.value.toUpperCase()"/>
+        <button class="btn btn--ghost" onclick="Rooms.lookup()">Find</button>
+      </div>
+    </div>
+    <div id="joinFoundSection" style="display:none">
+      <div class="found-pill" id="joinFoundName">—</div>
+      <div class="return-toggle">
+        <button class="rtog-btn active" id="rtogNew" onclick="Rooms.toggleJoinMode('new')">New Member</button>
+        <button class="rtog-btn" id="rtogReturn" onclick="Rooms.toggleJoinMode('return')">Returning? →</button>
+      </div>
+      <div id="joinNewSection">
+        <div class="form-row-2">
+          <div class="fg"><label>Your Name *</label><input id="jr_name" placeholder="Your full name"/></div>
+          <div class="fg"><label>Height (cm) *</label><input type="number" id="jr_height" placeholder="170"/></div>
+        </div>
+        <div class="form-row-2">
+          <div class="fg"><label>Current Weight (kg) *</label><input type="number" id="jr_weight" placeholder="70"/></div>
+          <div class="fg"><label>Target Weight (kg) *</label><input type="number" id="jr_targetWeight" placeholder="60"/></div>
+        </div>
+        <div class="fg"><label>Target Date *</label><input type="date" id="jr_targetDate"/></div>
+        <button class="btn btn--primary btn--full" onclick="Rooms.join()" style="margin-top:6px">Request to Join →</button>
+      </div>
+      <div id="joinReturnSection" style="display:none">
+        <div class="return-info-box"><span>🔄</span> Already joined on another device? Enter your exact name &amp; height to get back in.</div>
+        <div class="form-row-2">
+          <div class="fg"><label>Your Name *</label><input id="ret_name" placeholder="Exact name you used"/></div>
+          <div class="fg"><label>Your Height (cm) *</label><input type="number" id="ret_height" placeholder="170"/></div>
+        </div>
+        <button class="btn btn--primary btn--full" onclick="Rooms.rejoin()" style="margin-top:6px">Access My Account →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GOALS MODAL -->
+<div class="overlay" id="goalsModal">
+  <div class="modal">
+    <button class="modal-x" onclick="UI.closeModal('goalsModal')">✕</button>
+    <div class="modal-hd"><div class="modal-icon">🎯</div><div class="modal-title">MY GOALS</div><div class="modal-sub">Set targets to keep yourself on track</div></div>
+    <div class="form-row-2">
+      <div class="fg"><label>Wake Up Time</label><input type="time" id="g_wakeup"/></div>
+      <div class="fg"><label>Workout Days/Week</label><input type="number" id="g_workoutdays" placeholder="5" min="1" max="7"/></div>
+    </div>
+    <div class="form-row-2">
+      <div class="fg"><label>Daily Water (glasses)</label><input type="number" id="g_water" placeholder="8"/></div>
+      <div class="fg"><label>Sleep Goal (hrs)</label><input type="number" id="g_sleep" placeholder="8"/></div>
+    </div>
+    <div class="form-row-2">
+      <div class="fg"><label>Target Weight (kg)</label><input type="number" id="g_targetWeight" step="0.1" placeholder="65"/></div>
+      <div class="fg"><label>Target Date</label><input type="date" id="g_targetDate"/></div>
+    </div>
+    <button class="btn btn--primary btn--full" onclick="Goals.save()">Save Goals</button>
+  </div>
+</div>
+
+<!-- WEIGHT MODAL -->
+<div class="overlay" id="weightModal">
+  <div class="modal modal--sm">
+    <button class="modal-x" onclick="UI.closeModal('weightModal')">✕</button>
+    <div class="modal-hd"><div class="modal-icon">⚖️</div><div class="modal-title">LOG WEIGHT</div></div>
+    <div class="fg"><label>Today's Weight (kg) *</label><input type="number" id="wm_weight" placeholder="74.5" step="0.1"/></div>
+    <div class="fg"><label>Note <span class="lbl-opt">optional</span></label><input id="wm_note" placeholder="Morning, post workout..."/></div>
+    <button class="btn btn--primary btn--full" onclick="Weight.log()">Log It</button>
+  </div>
+</div>
+
+<!-- ALARM MODAL -->
+<div class="overlay" id="alarmModal">
+  <div class="modal modal--alarm">
+    <button class="modal-x" onclick="UI.closeModal('alarmModal')">✕</button>
+    <div style="text-align:center;font-size:3rem;margin-bottom:6px" class="bell-anim">⏰</div>
+    <div class="modal-title" style="text-align:center;font-size:2rem;letter-spacing:3px">SET ALARM</div>
+    <div class="modal-sub" style="text-align:center;margin-bottom:6px">No snooze. No excuses. Just wake up &amp; crush it. 💪</div>
+    <div class="pwa-alarm-tip" id="pwaAlarmTip"></div>
+    <div class="fg" style="margin-top:14px"><label>Alarm Time *</label><input type="time" id="alarm_time" class="alarm-time-in"/></div>
+    <div class="fg">
+      <label>Repeat on Days</label>
+      <div class="day-row" id="daySelector">
+        <span class="dc" data-d="0">SUN</span><span class="dc on" data-d="1">MON</span><span class="dc on" data-d="2">TUE</span>
+        <span class="dc on" data-d="3">WED</span><span class="dc on" data-d="4">THU</span><span class="dc on" data-d="5">FRI</span><span class="dc" data-d="6">SAT</span>
+      </div>
+    </div>
+    <button class="btn btn--primary btn--full" onclick="Alarm.save()">Set Alarm 🔔</button>
+  </div>
+</div>
+
+<!-- ALARM RINGING -->
+<div class="overlay" id="alarmRingingModal">
+  <div class="modal modal--ringing">
+    <div class="ring-bell">🔔</div>
+    <div class="ring-title">RISE &amp; GRIND!</div>
+    <div class="ring-time mono" id="ringingTime">06:00</div>
+    <div class="ring-sub">Your body won't train itself.<br/>Time to move, champion.</div>
+    <button class="dismiss-btn" onclick="Alarm.dismiss()">I'M AWAKE — DISMISS</button>
+    <div class="no-snooze">⚠️ No snooze. You got this.</div>
+  </div>
+</div>
+
+<!-- ALARM PROMPT -->
+<div class="overlay" id="alarmPromptModal">
+  <div class="modal modal--sm" style="text-align:center">
+    <div style="font-size:2.8rem;margin-bottom:10px">🌅</div>
+    <div class="modal-title">SET AN ALARM?</div>
+    <div class="modal-sub" style="margin-bottom:20px">We ring, you wake — no snooze, no mercy. 😤</div>
+    <button class="btn btn--primary btn--full" style="margin-bottom:8px" onclick="UI.closeModal('alarmPromptModal');UI.openModal('alarmModal')">Yes! Set My Alarm ⏰</button>
+    <button class="btn btn--ghost btn--full" onclick="UI.closeModal('alarmPromptModal')">I'm already disciplined 🙄</button>
+  </div>
+</div>
+
+<!-- PENDING APPROVAL -->
+<div class="overlay" id="pendingApprovalModal">
+  <div class="modal modal--sm" style="text-align:center">
+    <div style="font-size:2.8rem;margin-bottom:10px">⏳</div>
+    <div class="modal-title">REQUEST SENT!</div>
+    <div class="modal-sub" style="margin-bottom:12px">The owner will approve you shortly. You'll be let in automatically!</div>
+    <div style="background:var(--bg4);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div class="mono" style="font-size:1.6rem;color:var(--accent);letter-spacing:4px" id="pendingRoomCodeDisp">—</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Room Code</div>
+    </div>
+    <button class="btn btn--ghost btn--full" onclick="UI.closeModal('pendingApprovalModal')">Got it, I'll wait!</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
