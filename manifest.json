@@ -1,23 +1,43 @@
 {
   "name": "FitPack — Squad Fitness Tracker",
   "short_name": "FitPack",
-  "description": "Track workouts, habits and progress with your squad",
-  "start_url": ".",
+  "description": "Track workouts, habits and progress with your squad. Create a room, invite friends, and crush your goals together.",
+  "id": "/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#08080f",
   "theme_color": "#08080f",
   "orientation": "portrait-primary",
+  "categories": ["health", "fitness", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
+    { "src": "icons/icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
     {
-      "src": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=192&q=80",
-      "sizes": "192x192",
-      "type": "image/jpeg",
-      "purpose": "any maskable"
+      "name": "Today's Plan",
+      "short_name": "Today",
+      "description": "Open today's workout & habit checklist",
+      "url": "./index.html?tab=today",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
-      "src": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=512&q=80",
-      "sizes": "512x512",
-      "type": "image/jpeg"
+      "name": "Squad Insights",
+      "short_name": "Squad",
+      "description": "See your squad's leaderboard & progress",
+      "url": "./index.html?tab=insights",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     }
   ]
 }

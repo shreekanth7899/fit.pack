@@ -1,10 +1,23 @@
-
+/* ════════════════════════════════════════════════
+   FITPACK FINAL — app.js
+   FIXES:
+   ✅ today() uses LOCAL date (not UTC) — correct for all timezones incl. IST
+   ✅ Midnight auto-reset — app detects date change while open and re-renders
+   ✅ 30-day data retention — old workouts/habits auto-pruned from Firebase
+   ✅ wkly() uses local dates correctly
+   ✅ Weight log capped at 30 days, sorted properly
+   ✅ All data keyed by local YYYY-MM-DD date string
+   ════════════════════════════════════════════════ */
 "use strict";
 
 // ── HELPERS ──────────────────────────────────
 const $       = id => document.getElementById(id);
 const genId   = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 const genCode = () => { const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; return 'FIT-'+Array.from({length:4},()=>c[Math.floor(Math.random()*c.length)]).join(''); };
+
+// ── CRITICAL FIX: Use LOCAL date, not UTC ────
+// toISOString() returns UTC — at 11:30 PM IST it's already tomorrow in UTC!
+// This caused data saving to wrong date key.
 function today() {
   const d = new Date();
   const y = d.getFullYear();
@@ -226,8 +239,16 @@ const App = {
       navigator.serviceWorker.register('sw.js').then(reg=>{
         this._pwaReady=true;
         this._updatePWAUI(true);
+        // Sync any saved alarms to the SW immediately
+        navigator.serviceWorker.ready.then(()=>this._syncAlarmsToSW());
       }).catch(()=>{ this._updatePWAUI(false); });
     } else { this._updatePWAUI(false); }
+
+    // Request notification permission early (needed for background alarms)
+    if('Notification' in window && Notification.permission==='default'){
+      // Defer slightly so it doesn't fire on first paint
+      setTimeout(()=>{ Notification.requestPermission().catch(()=>{}); },2000);
+    }
   },
 
   _updatePWAUI(supported) {
@@ -890,5 +911,73 @@ function wklyCount(member){
   return count;
 }
 
+// ── PWA INSTALL ────────────────────────────────
+let deferredInstallPrompt = null;
+
+const PWA = {
+  install() {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') {
+          UI.toast('FitPack installed! 🎉');
+        }
+        deferredInstallPrompt = null;
+        $('installBanner').classList.remove('show');
+      });
+    } else if (this._isIOS() && !this._isStandalone()) {
+      // iOS doesn't support beforeinstallprompt — show manual steps
+      UI.openModal('iosInstallModal');
+      $('installBanner').classList.remove('show');
+    }
+  },
+
+  dismiss() {
+    $('installBanner').classList.remove('show');
+    sessionStorage.setItem('fp_install_dismissed', '1');
+  },
+
+  _isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  },
+
+  _isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+  },
+
+  maybeShowBanner() {
+    if (this._isStandalone()) return; // already installed
+    if (sessionStorage.getItem('fp_install_dismissed')) return;
+    if (localStorage.getItem('fp_install_done')) return;
+
+    if (this._isIOS()) {
+      // Show banner with manual instructions trigger
+      setTimeout(()=>$('installBanner').classList.add('show'), 2500);
+    }
+    // Android/Chrome: banner shows when beforeinstallprompt fires (below)
+  },
+};
+
+// Capture Chrome/Android install prompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (!sessionStorage.getItem('fp_install_dismissed') && !PWA._isStandalone()) {
+    setTimeout(()=>$('installBanner')?.classList.add('show'), 2500);
+  }
+});
+
+// Hide banner once installed
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem('fp_install_done','1');
+  $('installBanner')?.classList.remove('show');
+  deferredInstallPrompt = null;
+  UI.toast('FitPack installed! 🎉');
+});
+
 // ── BOOT ──────────────────────────────────────
-window.addEventListener('DOMContentLoaded',()=>App.init());
+window.addEventListener('DOMContentLoaded',()=>{
+  App.init();
+  PWA.maybeShowBanner();
+});
